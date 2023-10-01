@@ -222,7 +222,7 @@ plt.ylabel(" Sum of Squared Distances")
 
 pd.Series(ssd).diff().plot(kind='bar')
 
-model = KMeans(n_clusters=3)
+model = KMeans(n_clusters=4)
 model.fit(scaled_X)
 
 model.labels_
