@@ -124,7 +124,7 @@ df_val = df_regression[setpoint:].reset_index(drop=True)
 
 df_train.head()
 
-df_val.head()
+df_val.tail()
 
 plt.figure(figsize=(20,5))
 sns.lineplot(data=df_train, x=df_train['Date'], y=df_train['Qty']);
@@ -140,7 +140,7 @@ df_val = df_val.set_index('Date')
 y_train = df_train['Qty']
 y_val = df_val['Qty']
 
-arima_model = ARIMA(y_train, order = (40,1,0))
+arima_model = ARIMA(y_train, order = (90,1,0))
 arima_model = arima_model.fit( )
 
 y_pred = arima_model.get_forecast(len(df_val))
@@ -148,17 +148,47 @@ y_pred = arima_model.get_forecast(len(df_val))
 y_pred_df = y_pred.conf_int()
 y_pred_df['predictions'] = arima_model.predict(start=y_pred_df.index[0], end=y_pred_df.index[-1])
 y_pred_df.index = df_val.index
-y_pred_final = y_pred_df['predictions']
+y_pred_out = y_pred_df['predictions']
 
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 
-mae = mean_absolute_error(y_val, y_pred_final)
-rmse = np.sqrt(mean_squared_error(y_val, y_pred_final))
+mae = mean_absolute_error(y_val, y_pred_out)
+rmse = np.sqrt(mean_squared_error(y_val, y_pred_out))
+
+mae
+rmse
 
 plt.figure(figsize=(20,5), dpi=200)
 plt.plot(y_train)
 plt.plot(y_val, color='orange')
-plt.plot(y_pred_final, color='black', label='ARIMA Predictions')
+plt.plot(y_pred_out, color='black', label='ARIMA Predictions')
+
+plt.ylabel('Quantity')
+plt.xlabel('Date')
+plt.legend();
+
+"""## Final Model"""
+
+df_final = df_regression.copy().set_index('Date')
+
+y_final = df_final['Qty']
+
+final_model_arima = ARIMA(y_train, order = (90,1,0))
+final_model_arima = final_model_arima.fit( )
+
+y_pred_final = arima_model.get_forecast(90)
+
+y_pred_final_df = y_pred.conf_int()
+y_pred_final_df['predictions'] = final_model_arima.predict(start=y_pred_final_df.index[0], end=y_pred_final_df.index[-1])
+y_pred_final_df.index = pd.date_range(start='01-01-2023', periods=91)
+y_pred_final_out = y_pred_final_df['predictions']
+
+plt.figure(figsize=(20,5), dpi=200)
+plt.plot(y_final)
+plt.plot(y_pred_final_out, color='red', label='ARIMA Predictions')
+
+plt.ylabel('Quantity')
+plt.xlabel('Date')
 plt.legend();
 
 """# Clustering
